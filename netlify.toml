@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# NOTE: no manual redirect — the Next.js handler uses the v2 streaming protocol
+# which cannot be invoked via /.netlify/functions/ paths; routes must come from
+# the function manifest uploaded with the deploy.
