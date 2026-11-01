@@ -61,3 +61,13 @@ body {
 .seg-on {
   @apply bg-white text-[#1d1d1f] shadow-[0_2px_10px_rgba(0,0,0,0.08)];
 }
+
+/* ── FNOL simulator scan line ─────────────────────────────────────── */
+@keyframes hero-scan {
+  0%, 100% { top: 0%; }
+  50% { top: 100%; }
+}
+.hero-scan { animation: hero-scan 3s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-scan { animation: none; }
+}
