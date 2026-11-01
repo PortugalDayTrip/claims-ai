@@ -1,5 +1,6 @@
 'use client'
 
+import SketchBoard from '@/components/sketch-board'
 import type { DaaDriver, DaaForm } from '@/lib/types'
 import { useRef, useState } from 'react'
 
@@ -357,9 +358,11 @@ export default function DaaWizard({
         <div className="card p-5">
           <h3 className="font-semibold text-slate-800">Croqui do acidente</h3>
           <p className="mt-1 text-xs text-slate-500">
-            Desenhe: ruas, sentidos de circulação, posição dos veículos (A / B) e ponto de impacto.
+            Monte a cena: veículos A/B, vias, setas de direção, sinais — e desenhe à mão se precisar.
           </p>
-          <DrawPad label="Croqui" tall onChange={(d) => set('sketchDataUrl', d)} />
+          <div className="mt-3">
+            <SketchBoard onChange={(d) => set('sketchDataUrl', d)} />
+          </div>
           <input className="input mt-3" placeholder="Notas sobre o croqui (opcional)" value={form.pointsOfImpact ?? ''} onChange={(e) => set('pointsOfImpact', e.target.value)} />
         </div>
       )}
