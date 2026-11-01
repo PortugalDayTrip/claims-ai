@@ -165,6 +165,18 @@ export default function CustomerPortal({ token, claim }: { token: string; claim:
         </div>
       </div>
 
+      {state.fnol.assetType === 'vehicle' && (
+        <a
+          href={`/daa/${token}`}
+          className="card block border-2 border-dashed border-brand-300 p-5 text-center hover:bg-brand-50"
+        >
+          <p className="font-semibold text-slate-800">🤝 Declaração Amigável (DAAA)</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Preencha com o outro condutor — se ambos assinarem, as circunstâncias presumem-se verdadeiras
+          </p>
+        </a>
+      )}
+
       <PrivacyNote compact />
 
       <p className="text-center text-xs text-slate-400">

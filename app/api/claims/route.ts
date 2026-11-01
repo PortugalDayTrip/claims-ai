@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { addAudit, db } from '@/lib/db'
+import { nextDeadline } from '@/lib/deadlines'
 import { isAdjuster } from '@/lib/session'
 import { notifyClaimant, tplAcknowledgement } from '@/lib/notify'
 import type { AssetType } from '@/lib/types'
@@ -21,6 +22,10 @@ export async function GET() {
       severity: c.analysis?.overallSeverity,
       fraudScore: c.analysis?.fraudScore,
       triage: c.analysis?.triage.verdict,
+      sla: (() => {
+        const d = nextDeadline(c)
+        return d ? { label: d.label, dueAt: d.dueAt, daysLeft: d.daysLeft, state: d.state, legalBasis: d.legalBasis } : null
+      })(),
       estCost: c.analysis?.estCostEur,
     })),
   )

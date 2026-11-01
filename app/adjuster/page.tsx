@@ -1,6 +1,6 @@
 import { SeverityBadge, StatusBadge, TriageBadge } from '@/components/ui'
 import { db } from '@/lib/db'
-import { slaFor } from '@/lib/status'
+import { nextDeadline } from '@/lib/deadlines'
 import { isAdjuster } from '@/lib/session'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -84,14 +84,15 @@ export default async function AdjusterDashboard() {
                 <td className="px-4 py-3">{c.analysis ? <TriageBadge v={c.analysis.triage.verdict} /> : '—'}</td>
                 <td className="px-4 py-3">
                   {(() => {
-                    const s = slaFor(c.status, c.updatedAt)
-                    const h = Math.round(s.ageHours)
-                    const label = h < 24 ? `${h}h` : `${Math.round(h / 24)}d`
+                    const d = nextDeadline(c)
+                    if (!d) return '—'
                     return (
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                        s.overdue ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'
-                      }`} title={s.limitHours ? `SLA ${s.limitHours}h` : 'sem SLA definido'}>
-                        {label}{s.overdue ? ' ⚠' : ''}
+                        d.state === 'breached' ? 'bg-rose-100 text-rose-700'
+                        : d.state === 'at_risk' ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                      }`} title={`${d.label} — ${d.legalBasis}`}>
+                        {d.state === 'breached' ? `⚠ ${Math.abs(d.daysLeft)}d` : `${d.daysLeft}d`}
                       </span>
                     )
                   })()}

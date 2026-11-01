@@ -64,7 +64,37 @@ export interface Claim {
   }
   /** Settlement offer sent to the claimant (accept/contest via token link) */
   offer?: ClaimOffer
+  /** DAAA digital — declaração amigável assinada pelos dois condutores */
+  daa?: DaaForm
   audit: AuditEvent[]
+}
+
+// ── DAAA digital (DL 291/2007 art.35 — presunção se assinada por ambos) ────────
+export interface DaaDriver {
+  name?: string
+  policyNumber?: string
+  insurerName?: string
+  plate?: string
+  vehicleDesc?: string
+  phone?: string
+  circumstances?: string[] // 17 normalized DAAA items
+  signatureDataUrl?: string // canvas PNG — assinatura eletrónica simples (eIDAS)
+}
+
+export interface DaaForm {
+  accidentDate?: string
+  accidentTime?: string
+  place?: string
+  injuries?: boolean
+  materialDamageOther?: boolean
+  witnesses?: string
+  pointsOfImpact?: string // descrição/esquema textual
+  sketchDataUrl?: string    // croqui desenhado no canvas
+  driverA?: DaaDriver       // segurado (veículo A)
+  driverB?: DaaDriver       // outro condutor (veículo B)
+  signedAt?: string
+  /** true quando ambos assinaram → presunção legal art.35.3 */
+  jointSigned?: boolean
 }
 
 // ── Settlement offer (RGPD/AI-Act: humano decide, IA apenas fundamenta) ───────

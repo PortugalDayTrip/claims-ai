@@ -1,6 +1,7 @@
 'use client'
 
 import { FraudMeter, SeverityBadge, StatusBadge, TriageBadge } from '@/components/ui'
+import { deadlineStatus } from '@/lib/deadlines'
 import { damageTypesFor } from '@/lib/taxonomy'
 import type { Claim, DamageFinding } from '@/lib/types'
 import { useRouter } from 'next/navigation'
@@ -136,7 +137,36 @@ export default function ClaimDetail({ initial }: { initial: Claim }) {
               </blockquote>
             )}
           </section>
+{/* Prazos legais — DL 291/2007 art.36 / ASF Rec. 2/2025 */}
+          <section className="card p-5">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Prazos legais (SLA)</h2>
+            <ul className="mt-3 space-y-2">
+              {deadlineStatus(claim).map((d) => (
+                <li key={d.key} className="flex items-center justify-between gap-3 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-800">{d.label}</p>
+                    <p className="text-[11px] text-slate-400">{d.legalBasis} · até {fmtDate(d.dueAt)}</p>
+                  </div>
+                  <span className={`badge shrink-0 ${
+                    d.state === 'done' ? 'bg-emerald-100 text-emerald-700'
+                    : d.state === 'breached' ? 'bg-rose-100 text-rose-700'
+                    : d.state === 'at_risk' ? 'bg-amber-100 text-amber-700'
+                    : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {d.state === 'done' ? '✓ cumprido'
+                      : d.state === 'breached' ? `incumprido ${Math.abs(d.daysLeft)}d`
+                      : d.daysLeft === 0 ? 'hoje'
+                      : `${d.daysLeft}d úteis`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[11px] text-slate-400">
+              Prazos suspendem-se durante investigação de fraude fundamentada ou impossibilidade de contacto.
+            </p>
+          </section>
 
+          
           <section className="card p-5">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
