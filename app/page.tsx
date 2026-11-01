@@ -1,4 +1,3 @@
-import CustomerEntry from '@/components/customer-entry'
 import HeroVisual from '@/components/hero-visual'
 import LayersGrid from '@/components/layers-grid'
 import Link from 'next/link'
@@ -94,21 +93,6 @@ export default function Home() {
           <div className="lg:col-span-6">
             <HeroVisual />
           </div>
-        </div>
-      </section>
-
-      {/* ── Entradas: segurado + perito ──────────────────────────────── */}
-      <section className="mx-auto mt-16 grid max-w-2xl gap-4 md:grid-cols-2">
-        <CustomerEntry />
-        <div className="card flex flex-col justify-center p-7">
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900">Sou perito / seguradora</h3>
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Fila por deadline legal, análise com polígonos, sinais de fraude,
-            decisão e auditoria — num só ecrã.
-          </p>
-          <Link href="/adjuster" className="btn-secondary mt-5 w-fit">
-            Consola do perito →
-          </Link>
         </div>
       </section>
 
