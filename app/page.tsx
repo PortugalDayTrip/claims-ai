@@ -101,33 +101,36 @@ export default function Home() {
             ['6', '🔄', 'Subrogação', 'Culpa de terceiro → reclamação automática. Net cost real por sinistro.', 'Planeado'],
             ['7', '📊', 'Métricas', 'Funnel, SLA ASF, cycle time, workload por perito, STP rate.', 'Parcial'],
             ['8', '🔌', 'Integrações', 'Oficinas, meteo verify, e-SEGURNET, bordereaux — trabalho fora da app.', 'Planeado'],
-          ].map(([n, icon, t, d, status], i) => (
-            <div key={n} className="card relative flex aspect-square flex-col p-3.5">
-              {/* flow arrow to the next card */}
-              {i < 7 && (
-                <span
-                  aria-hidden="true"
-                  className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 text-slate-300 md:block"
-                >
-                  {i !== 3 ? '▸' : '↴'}
+          ].map(([n, icon, t, d, status], i) => {
+            const accent =
+              status === 'Ativo' ? { ring: 'hover:border-emerald-300', dot: 'bg-emerald-500', chip: 'bg-emerald-50 text-emerald-700', text: 'Ativo' }
+              : status === 'Parcial' ? { ring: 'hover:border-amber-300', dot: 'bg-amber-500', chip: 'bg-amber-50 text-amber-700', text: 'Parcial' }
+              : status === 'Em construção' ? { ring: 'hover:border-sky-300', dot: 'bg-sky-500', chip: 'bg-sky-50 text-sky-700', text: 'A construir' }
+              : { ring: 'hover:border-slate-300', dot: 'bg-slate-300', chip: 'bg-slate-100 text-slate-500', text: 'Planeado' }
+            return (
+              <div key={n} className={`card relative flex aspect-square flex-col overflow-hidden p-4 transition-colors ${accent.ring}`}>
+                {/* flow arrow to the next card */}
+                {i < 7 && (
+                  <span aria-hidden="true" className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 text-slate-300 md:block">
+                    {i !== 3 ? '▸' : '↴'}
+                  </span>
+                )}
+                {/* ghost step number */}
+                <span aria-hidden="true" className="pointer-events-none absolute -top-1 right-2 text-6xl font-black leading-none text-slate-100 select-none">
+                  {n}
                 </span>
-              )}
-              <div className="flex items-start justify-between">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#0e0e10] text-[10px] font-bold text-white">{n}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
-                  status === 'Ativo' ? 'bg-emerald-100 text-emerald-700'
-                  : status === 'Parcial' ? 'bg-amber-100 text-amber-700'
-                  : status === 'Em construção' ? 'bg-sky-100 text-sky-700'
-                  : 'bg-slate-100 text-slate-500'
-                }`}>{status}</span>
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f2f2f7] text-xl">{icon}</span>
+                <p className="mt-3 text-sm font-bold leading-tight text-[#1d1d1f]">{t}</p>
+                <p className="mt-1 hidden text-[11px] leading-snug text-[#6e6e73] sm:block">{d}</p>
+                <div className="mt-auto pt-2">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold ${accent.chip}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${accent.dot}`} />
+                    {accent.text}
+                  </span>
+                </div>
               </div>
-              <div className="mt-auto">
-                <p className="text-xl">{icon}</p>
-                <p className="mt-1 text-[13px] font-bold leading-tight text-[#1d1d1f]">{t}</p>
-                <p className="mt-1 hidden text-[10px] leading-snug text-[#6e6e73] sm:block">{d}</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
         <p className="mt-3 text-center text-[11px] text-[#6e6e73]">
           fluxo de trabalho · aviso → cobertura → triage → execução → dinheiro → recuperação
