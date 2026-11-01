@@ -84,45 +84,54 @@ export default function Home() {
       </div>
 
       {/* ── Arquitetura — as 8 camadas da operação de sinistros ────── */}
-      <div className="mx-auto mt-12 max-w-2xl">
+      <div className="mx-auto mt-12 max-w-4xl">
         <h2 className="text-center text-lg font-bold tracking-tight text-[#1d1d1f]">
           A operação completa, em 8 camadas
         </h2>
         <p className="mt-1 text-center text-xs text-[#6e6e73]">
           Do aviso à recuperação — o que já está ativo e o que está a ser construído
         </p>
-        <div className="mt-5 space-y-0">
+        <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
           {[
-            ['1', '📥', 'Intake multi-canal', 'Link web, email, corretor, API — claim nasce onde a notícia chegar. Dup-check automático.', 'Ativo'],
-            ['2', '✅', 'Verificação de cobertura', 'Apólice em vigor na data? Bem certo? Cobertura aplica? Sinal — nunca decisão automática.', 'Em construção'],
-            ['3', '🧭', 'Triage & roteamento', 'Express / perito / SIU / total-loss. Severity escalation + assignment por workload.', 'Ativo'],
-            ['4', '⚙️', 'Orquestração de tarefas', 'Cada marco legal vira uma tarefa com deadline. A fila do perito ordenada por SLA.', 'Em construção'],
-            ['5', '💰', 'Reservas & autoridade', 'Reserva automática, histórico de movimentos, limites de aprovação por nível.', 'Em construção'],
-            ['6', '🔄', 'Subrogação & recovery', 'Culpa de terceiro → reclamação automática ao outro segurador. Net cost real.', 'Planeado'],
-            ['7', '📊', 'Métricas operacionais', 'Funnel por estado, SLA compliance ASF, cycle time, workload por perito, STP rate.', 'Parcial'],
-            ['8', '🔌', 'Integrações & rede', 'Oficinas, meteo verify, e-SEGURNET, bordereaux — o claim trabalha fora da app.', 'Planeado'],
+            ['1', '📥', 'Intake multi-canal', 'Link web, email, corretor, API — o claim nasce onde a notícia chegar. Dup-check automático.', 'Ativo'],
+            ['2', '✅', 'Cobertura', 'Apólice em vigor? Bem certo? Cobertura aplica? Sinal — nunca decisão automática.', 'Em construção'],
+            ['3', '🧭', 'Triage & rota', 'Express · perito · SIU · total-loss. Escalonamento por severidade e workload.', 'Ativo'],
+            ['4', '⚙️', 'Tarefas & SLA', 'Cada marco legal vira uma tarefa. A fila do perito ordenada por deadline.', 'Em construção'],
+            ['5', '💰', 'Reservas', 'Reserva automática, movimentos auditados, limites de aprovação por nível.', 'Em construção'],
+            ['6', '🔄', 'Subrogação', 'Culpa de terceiro → reclamação automática. Net cost real por sinistro.', 'Planeado'],
+            ['7', '📊', 'Métricas', 'Funnel, SLA ASF, cycle time, workload por perito, STP rate.', 'Parcial'],
+            ['8', '🔌', 'Integrações', 'Oficinas, meteo verify, e-SEGURNET, bordereaux — trabalho fora da app.', 'Planeado'],
           ].map(([n, icon, t, d, status], i) => (
-            <div key={n}>
-              <div className="card flex items-start gap-3 p-4">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#0e0e10] text-[11px] font-bold text-white">{n}</span>
-                <span className="text-lg leading-7">{icon}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-bold text-[#1d1d1f]">{t}</p>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                      status === 'Ativo' ? 'bg-emerald-100 text-emerald-700'
-                      : status === 'Parcial' ? 'bg-amber-100 text-amber-700'
-                      : status === 'Em construção' ? 'bg-sky-100 text-sky-700'
-                      : 'bg-slate-100 text-slate-500'
-                    }`}>{status}</span>
-                  </div>
-                  <p className="mt-0.5 text-[11px] leading-snug text-[#6e6e73]">{d}</p>
-                </div>
+            <div key={n} className="card relative flex aspect-square flex-col p-3.5">
+              {/* flow arrow to the next card */}
+              {i < 7 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 text-slate-300 md:block"
+                >
+                  {i !== 3 ? '▸' : '↴'}
+                </span>
+              )}
+              <div className="flex items-start justify-between">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#0e0e10] text-[10px] font-bold text-white">{n}</span>
+                <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                  status === 'Ativo' ? 'bg-emerald-100 text-emerald-700'
+                  : status === 'Parcial' ? 'bg-amber-100 text-amber-700'
+                  : status === 'Em construção' ? 'bg-sky-100 text-sky-700'
+                  : 'bg-slate-100 text-slate-500'
+                }`}>{status}</span>
               </div>
-              {i < 7 && <div className="mx-auto h-3 w-px bg-slate-300" aria-hidden="true" />}
+              <div className="mt-auto">
+                <p className="text-xl">{icon}</p>
+                <p className="mt-1 text-[13px] font-bold leading-tight text-[#1d1d1f]">{t}</p>
+                <p className="mt-1 hidden text-[10px] leading-snug text-[#6e6e73] sm:block">{d}</p>
+              </div>
             </div>
           ))}
         </div>
+        <p className="mt-3 text-center text-[11px] text-[#6e6e73]">
+          fluxo de trabalho · aviso → cobertura → triage → execução → dinheiro → recuperação
+        </p>
       </div>
 
       {/* ── Compliance — as leis que o processo cumpre ─────────────── */}
