@@ -8,6 +8,8 @@ import path from 'path'
 
 const UPLOADS = path.join(process.cwd(), 'data', 'uploads')
 const ON_NETLIFY = process.env.NETLIFY === 'true' || !!process.env.NETLIFY_BLOBS_CONTEXT
+const BACKEND_URL = process.env.BACKEND_URL // AWS storage microservice (files.*)
+const BACKEND_KEY = process.env.BACKEND_KEY ?? ''
 
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -54,6 +56,28 @@ async function blobGet(key: string): Promise<Buffer | null> {
   }
 }
 
+// ── AWS HTTP backend (Lightsail store.py) ────────────────────────────────
+async function backendSet(key: string, buf: Buffer): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/files/${key}`, {
+    method: 'PUT',
+    headers: { 'x-backend-key': BACKEND_KEY, 'content-type': 'application/octet-stream' },
+    body: new Uint8Array(buf),
+  })
+  if (!res.ok) throw new Error(`backend store failed: ${res.status}`)
+}
+
+async function backendGet(key: string): Promise<Buffer | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/files/${key}`, {
+      headers: { 'x-backend-key': BACKEND_KEY },
+    })
+    if (!res.ok) return null
+    return Buffer.from(await res.arrayBuffer())
+  } catch {
+    return null
+  }
+}
+
 // ── Local disk backend ───────────────────────────────────────────────────
 async function diskSet(key: string, buf: Buffer): Promise<void> {
   const p = path.join(UPLOADS, key)
@@ -74,14 +98,16 @@ async function diskGet(key: string): Promise<Buffer | null> {
 export async function saveFile(claimId: string, fileId: string, buf: Buffer, mime: string): Promise<string> {
   const ext = EXT_BY_MIME[mime] ?? path.extname(mime.split('/')[1] ?? '') ?? '.bin'
   const key = `${claimId}/${fileId}${ext}`
-  if (ON_NETLIFY) await blobSet(key, buf)
+  if (BACKEND_URL) await backendSet(key, buf)
+  else if (ON_NETLIFY) await blobSet(key, buf)
   else await diskSet(key, buf)
   return key
 }
 
 export async function saveFrame(claimId: string, fileId: string, buf: Buffer): Promise<string> {
   const key = `${claimId}/${fileId}.jpg`
-  if (ON_NETLIFY) await blobSet(key, buf)
+  if (BACKEND_URL) await backendSet(key, buf)
+  else if (ON_NETLIFY) await blobSet(key, buf)
   else await diskSet(key, buf)
   return key
 }
@@ -89,6 +115,7 @@ export async function saveFrame(claimId: string, fileId: string, buf: Buffer): P
 export async function readFile(key: string): Promise<Buffer | null> {
   // Prevent path traversal (applies to both backends)
   const safe = path.normalize(key).replace(/^(\.\.(\/|\\|$))+/, '')
+  if (BACKEND_URL) return backendGet(safe)
   if (ON_NETLIFY) return blobGet(safe)
   return diskGet(safe)
 }

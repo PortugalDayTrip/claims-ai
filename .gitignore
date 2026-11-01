@@ -19,3 +19,5 @@ __pycache__/
 services/damage-detect/*.jpg
 services/damage-detect/*.png
 services/damage-detect/*.jpeg
+.vercel
+.env*

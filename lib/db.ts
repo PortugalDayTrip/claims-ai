@@ -9,6 +9,8 @@ import type { AuditEvent, Claim } from './types'
 const DATA_DIR = path.join(process.cwd(), 'data')
 const DB_FILE = path.join(DATA_DIR, 'claims.json')
 const ON_NETLIFY = process.env.NETLIFY === 'true' || !!process.env.NETLIFY_BLOBS_CONTEXT
+const BACKEND_URL = process.env.BACKEND_URL // AWS storage microservice (files.*)
+const BACKEND_KEY = process.env.BACKEND_KEY ?? ''
 
 interface DbShape {
   claims: Claim[]
@@ -24,6 +26,22 @@ async function blobDb() {
 }
 
 async function load(): Promise<DbShape> {
+  // AWS backend: never serve from the in-memory cache — each serverless
+  // instance caches independently and would show stale data (e.g. "0 itens")
+  // after another instance persisted a claim.
+  if (BACKEND_URL) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/db/claims`, {
+        headers: { 'x-backend-key': BACKEND_KEY },
+        cache: 'no-store',
+      })
+      cache = res.ok ? ((await res.json()) as DbShape | null) : null
+    } catch {
+      cache = cache ?? null
+    }
+    cache ??= { claims: [] }
+    return cache
+  }
   if (cache) return cache
   if (ON_NETLIFY) {
     try {
@@ -45,6 +63,15 @@ async function load(): Promise<DbShape> {
 }
 
 async function persist(): Promise<void> {
+  if (BACKEND_URL) {
+    const res = await fetch(`${BACKEND_URL}/db/claims`, {
+      method: 'PUT',
+      headers: { 'x-backend-key': BACKEND_KEY, 'content-type': 'application/json' },
+      body: JSON.stringify(cache),
+    })
+    if (!res.ok) throw new Error(`backend claims persist failed: ${res.status}`)
+    return
+  }
   if (ON_NETLIFY) {
     const store = await blobDb()
     await store.setJSON('claims', cache)

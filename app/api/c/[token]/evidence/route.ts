@@ -21,6 +21,32 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   const errors: string[] = []
 
   for (const [field, value] of form.entries()) {
+    // "remote" fields: {id,key,name,mime,size,sha256,slot?} for files the browser
+    // already PUT directly to the AWS backend via signed URL (>4.5MB).
+    if (field === 'remote' && typeof value === 'string') {
+      try {
+        const r = JSON.parse(value) as {
+          id: string; key: string; name: string; mime: string
+          size: number; sha256: string; slot?: string
+        }
+        if (!r.key.startsWith(`${claim.id}/`)) continue
+        saved.push({
+          id: r.id,
+          claimId: claim.id,
+          kind: isVideo(r.mime) ? 'video' : 'photo',
+          fileName: r.name,
+          mimeType: r.mime,
+          sizeBytes: r.size,
+          slot: r.slot,
+          sha256: r.sha256,
+          storageKey: r.key,
+          uploadedAt: new Date().toISOString(),
+        })
+      } catch {
+        errors.push('remote: metadados inválidos')
+      }
+      continue
+    }
     if (!(value instanceof File)) continue
     const isFrameField = field.startsWith('frame::')
     // Guided photo slots: "file::<slot>" → the photo serves a checklist slot

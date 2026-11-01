@@ -711,6 +711,19 @@ def health():
     }
 
 
+def _native(o):
+    """Recursively convert numpy scalars/arrays to JSON-native Python types."""
+    if isinstance(o, np.generic):
+        return o.item()
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    if isinstance(o, dict):
+        return {k: _native(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [_native(v) for v in o]
+    return o
+
+
 @app.post("/detect")
 async def detect_endpoint(
     image: UploadFile = File(...),
@@ -719,13 +732,13 @@ async def detect_endpoint(
     t0 = time.perf_counter()
     img = _decode(await image.read())
     dets = detect(img, profile)
-    return {
+    return JSONResponse(_native({
         "detections": dets,
         "damage":     [d for d in dets if d["kind"] == "damage"],
         "parts":      [d for d in dets if d["kind"] == "part"],
         "ms":         round((time.perf_counter() - t0) * 1000),
         "profile":    profile,
-    }
+    }))
 
 
 @app.post("/annotate")

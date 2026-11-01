@@ -180,17 +180,41 @@ export default function UploadWizard({ token, claim }: { token: string; claim: C
     }
   }
 
+  // Serverless multipart is limited to ~4.5MB — bigger files go straight to
+  // the AWS backend via a one-time signed URL, then register as "remote".
+  const BIG = 4 * 1024 * 1024
+  const directUpload = async (file: File, slot?: string) => {
+    const r = await fetch(`/api/c/${token}/evidence-url`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: file.name, mime: file.type || 'application/octet-stream' }),
+    })
+    const u = await r.json()
+    if (!r.ok) throw new Error(u.error ?? 'Falha a preparar upload')
+    const up = await fetch(u.uploadUrl, { method: 'PUT', body: file })
+    const meta = await up.json().catch(() => ({}))
+    if (!up.ok) throw new Error(meta.detail ?? `Upload falhou (${up.status})`)
+    return { id: u.id, key: u.key, name: file.name, mime: file.type || 'application/octet-stream', size: file.size, sha256: meta.sha256, slot }
+  }
+
   const submitAll = async () => {
     setBusy(true)
     setError(null)
     try {
       const form = new FormData()
-      for (const p of photos) form.append('files', p, p.name)
+      for (const p of photos) {
+        if (p.size > BIG) form.append('remote', JSON.stringify(await directUpload(p)))
+        else form.append('files', p, p.name)
+      }
       for (const [slot, files] of Object.entries(slotPhotos)) {
-        for (const f of files) form.append(`file::${slot}`, f, f.name)
+        for (const f of files) {
+          if (f.size > BIG) form.append('remote', JSON.stringify(await directUpload(f, slot)))
+          else form.append(`file::${slot}`, f, f.name)
+        }
       }
       for (const v of videos) {
-        form.append('files', v.file, v.file.name)
+        if (v.file.size > BIG) form.append('remote', JSON.stringify(await directUpload(v.file)))
+        else form.append('files', v.file, v.file.name)
         for (const f of v.frames) {
           form.append(`frame::${v.file.name}::${f.timeSec}`, f.blob, `${v.file.name}_f${f.timeSec}s.jpg`)
         }
