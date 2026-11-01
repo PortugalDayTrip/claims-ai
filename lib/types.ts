@@ -78,6 +78,7 @@ export interface DaaDriver {
   vehicleDesc?: string
   phone?: string
   circumstances?: string[] // 17 normalized DAAA items
+  impactPoint?: string      // zone key on the vehicle top-view (front_left|front|…)
   signatureDataUrl?: string // canvas PNG — assinatura eletrónica simples (eIDAS)
 }
 
